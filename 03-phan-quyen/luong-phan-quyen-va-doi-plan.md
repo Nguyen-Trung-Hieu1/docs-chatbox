@@ -42,7 +42,7 @@ Admin gạt Free/Paid → FE yêu cầu BE đổi plan
 2. Khi admin chọn một user rồi gạt sang Paid hoặc Free, FE gửi  Mongo user ID và plan muốn đổi cho API quản trị của Chatbox.
 3. BE xác thực access token của admin, đọc role `chatbox-admin` hiện tại và chỉ tiếp tục nếu admin thật sự có quyền. 
 4. BE lấy `keycloak_sub` của user được chọn từ MongoDB. 
-5. BE đọc role cũ để biết plan trước khi đổi. Sau đó BE dùng service account gọi Keycloak Admin API: **đổi sang Paid thì gán `chatbox-paid`**; **đổi về Free thì bảo đảm có `chatbox-free` và gỡ `chatbox-paid`**. BE đọc role lại để xác nhận thao tác thành công.
+5. BE đọc role cũ để biết plan trước khi đổi. Sau đó BE dùng service account gọi Keycloak Admin API: đổi sang Paid thì gán `chatbox-paid`; đổi về Free thì bảo đảm có `chatbox-free` và gỡ `chatbox-paid`**. BE đọc role lại để xác nhận thao tác thành công.
 6. BE cập nhật plan và credit trong ví MongoDB theo plan mới. Khi bước này thành công, BE trả thông tin user đã cập nhật; FE đổi nhãn Free/Paid trên trang admin. 
 
 
