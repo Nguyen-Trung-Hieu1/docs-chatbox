@@ -20,7 +20,7 @@ FE gửi request kèm access token của user
   → BE trả danh sách model và credit phù hợp cho FE
 ```
 
-1. Sau đăng nhập, FE gửi access token của user khi gọi API Chatbox. BE kiểm tra token và lấy `sub`, tức ID của user bên Keycloak. BE dùng `sub` tìm đúng user Chatbox trong MongoDB.
+1. Sau đăng nhập, FE gửi access token của user khi gọi API Chatbox. BE kiểm tra token và lấy `sub`. BE dùng `sub` tìm đúng user Chatbox trong MongoDB.
 2. BE dùng `client ID` và `client secret` của **backend service account** để xin một access token riêng từ Keycloak. Token này đại diện cho backend và có quyền đọc/sửa role.
 3. BE gửi token service account trong một request khác tới Keycloak Admin API. Keycloak trả danh sách role của user. 
 .
