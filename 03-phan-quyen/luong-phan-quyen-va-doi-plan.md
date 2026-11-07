@@ -49,7 +49,8 @@ Admin gạt Free/Paid → FE yêu cầu BE đổi plan
 ## Khi người dùng gửi tin nhắn với một model
 1. Frontend gửi tin nhắn và model người dùng chọn tới backend, kèm access token của họ.
 2. Backend xác thực người dùng, đọc role hiện tại từ Keycloak và đồng bộ plan Free/Paid vào MongoDB.
-3. Backend lấy danh sách model được phép theo plan đó, rồi kiểm tra lại model trong request. Danh sách hiện trên giao diện chỉ để người dùng chọn; quyền sử dụng do backend quyết định.
-Nếu model nằm trong quyền: backend kiểm tra credit còn đủ, sau đó gửi câu hỏi tới 9Router bằng model đã chọn. Khi nhận câu trả lời, backend lưu tin nhắn, tính credit đã dùng và trả kết quả về frontend. Nếu credit không đủ, request dừng trước khi gọi 9Router.
+3. Backend lấy danh sách model được phép theo plan đó, rồi kiểm tra lại model trong request.
+   
+-Nếu model nằm trong quyền: backend kiểm tra credit còn đủ, sau đó gửi câu hỏi tới 9Router bằng model đã chọn. Khi nhận câu trả lời, backend lưu tin nhắn, tính credit đã dùng và trả kết quả về frontend. Nếu credit không đủ, request dừng trước khi gọi 9Router.
 
-Nếu model nằm ngoài quyền: backend trả lỗi “gói của bạn không được dùng model này”. Request dừng trước khi gọi 9Router; tin nhắn đó không được lưu và không bị trừ credit. Việc sửa request từ trình duyệt để gửi tên model Paid cũng không vượt qua được bước kiểm tra này.
+-Nếu model nằm ngoài quyền: backend trả lỗi “gói của bạn không được dùng model này”. Request dừng trước khi gọi 9Router; tin nhắn đó không được lưu và không bị trừ credit. Việc sửa request từ trình duyệt để gửi tên model Paid cũng không vượt qua được bước kiểm tra này.
