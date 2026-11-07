@@ -1,11 +1,10 @@
 # 06. Luồng chạy khi người dùng gửi một request chat
 
-File này đi theo **một lần bấm Gửi trên trang Chatbox**, từ trình duyệt tới lúc câu trả lời hiện xong. Nếu người dùng đang ở cuộc trò chuyện mới, sẽ có thêm request tạo cuộc trò chuyện trước request chat.
+
 
 ```text
 Người dùng bấm Gửi
   → frontend (React)
-  → Nginx frontend
   → backend Chatbox (Go)
   ├─ Keycloak: backend dùng khóa công khai kiểm tra token, hỏi role hiện tại
   ├─ MongoDB: user, cuộc trò chuyện, ví, tin nhắn
