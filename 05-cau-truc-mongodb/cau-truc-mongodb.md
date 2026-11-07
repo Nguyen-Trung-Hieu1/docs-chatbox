@@ -21,7 +21,7 @@ MongoDB Chatbox
 | `messages` | `_id`, `conversation_id`, `role`, `content`, `summarized`, ngày tạo | Một bản ghi cho mỗi tin nhắn. `role` là `user` hoặc `assistant`; `content` hiện là text. `summarized` cho biết tin đó đã được gộp vào bản tóm tắt để làm ngữ cảnh AI. |
 | `wallets` | `_id`, `plan`, `plan_source`, `balance`, `credit_reset_at`, `usage` | Ví credit của user. `_id` của ví chính là `users._id`. `usage` chứa các lượt sử dụng gần nhất. |
 | `api_keys` | `_id`, `user_id`, `name`, `prefix`, `hash`, ngày tạo, lần dùng cuối, ngày thu hồi | API key của user. MongoDB giữ **hash**, không giữ nguyên chuỗi key bí mật đã cấp. |
-| `sessions` | `_id`, `user_id`, `token_hash`, hạn và ngày tạo | Dữ liệu phiên đăng nhập **kiểu cũ**. Luồng Keycloak hiện tại không lưu access token hoặc refresh token vào collection này. |
+
 
 
 
