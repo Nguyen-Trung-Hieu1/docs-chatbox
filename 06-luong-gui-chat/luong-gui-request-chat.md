@@ -19,8 +19,8 @@ Người dùng bấm Gửi
 4. Frontend gửi request chat gồm **ID cuộc trò chuyện, nội dung câu hỏi và model đã chọn**, kèm access token đăng nhập của user. 
 5. Backend kiểm tra access token. Nếu token hết hạn và frontend nhận lỗi `401`, frontend thử dùng refresh cookie để xin access token mới . Nếu vẫn thất bại, lượt chat dừng và người dùng có thể phải đăng nhập lại.
 6. Từ token hợp lệ, backend lấy `sub` của Keycloak, tìm user Chatbox tương ứng trong MongoDB.  backend đọc role hiện tại từ Keycloak 
-7. Backend kiểm tra nội dung câu hỏi không rỗng, ID cuộc trò chuyện có hợp lệ và cuộc trò chuyện đó **thuộc đúng user đang gửi**. User không thể đọc hoặc gửi tin vào cuộc trò chuyện của người khác bằng cách sửa ID trong request.
-8. Backend lấy plan và danh sách model được phép, kiểm tra model trong request. Nếu model không thuộc plan, backend báo lỗi và **không gửi request trả lời tới 9Router, không lưu câu hỏi mới**. 
+7. Backend kiểm tra nội dung câu hỏi không rỗng, ID cuộc trò chuyện có hợp lệ và cuộc trò chuyện đó thuộc đúng user đang gửi. User không thể đọc hoặc gửi tin vào cuộc trò chuyện của người khác bằng cách sửa ID trong request.
+8. Backend lấy plan và danh sách model được phép, kiểm tra model trong request. Nếu model không thuộc plan, backend báo lỗi và không gửi request trả lời tới 9Router, không lưu câu hỏi mới. 
 9. Backend lấy các tin nhắn trước đó của cuộc trò chuyện và bản tóm tắt cũ (nếu có), rồi thêm câu hỏi mới vào ngữ cảnh gửi AI. 
 10. Backend ước lượng token và tính lượng credit cần tạm giữ theo model. Ví MongoDB chỉ cho tạm giữ nếu số dư còn đủ. Nếu không đủ, backend báo lỗi; câu hỏi mới chưa được lưu và request trả lời chính chưa được gửi tới 9Router. 
 12. Khi tạm giữ credit thành công, backend lưu câu hỏi của user vào collection `messages`. Nó cập nhật thời gian hoạt động của cuộc trò chuyện; nếu tiêu đề còn là “Cuộc trò chuyện mới”, phần đầu câu hỏi được dùng làm tiêu đề.
