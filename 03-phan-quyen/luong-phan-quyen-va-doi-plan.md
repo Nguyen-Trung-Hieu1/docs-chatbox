@@ -8,7 +8,6 @@ Chatbox dùng ba role trong Keycloak:
 | `chatbox-paid` | Tài khoản Paid, được dùng thêm các model Paid. |
 | `chatbox-admin` | Được vào trang admin và đổi plan cho user khác. |
 
-Một user có thể thấy cả `chatbox-free` và `chatbox-paid` vì Free là role mặc định được thừa kế. **Nếu có `chatbox-paid` thì backend coi là Paid; nếu không có thì coi là Free.** `chatbox-admin` là quyền quản trị riêng, không tự biến user thành Paid.
 
 ## Luồng 1: Chatbox xác định user đang dùng plan nào
 
