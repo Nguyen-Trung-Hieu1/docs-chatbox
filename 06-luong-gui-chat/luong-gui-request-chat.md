@@ -6,7 +6,7 @@
 Người dùng bấm Gửi
   → frontend (React)
   → backend Chatbox (Go)
-  ├─ Keycloak: backend dùng khóa công khai kiểm tra token, hỏi role hiện tại
+  ├─ Keycloak: backend dùng khóa tra token, hỏi role hiện tại
   ├─ MongoDB: user, cuộc trò chuyện, ví, tin nhắn
   └─ 9Router → model AI
        └─ nội dung trả lời + usage → backend → frontend → người dùng
@@ -15,7 +15,7 @@ Người dùng bấm Gửi
 ## A. Frontend chuẩn bị và gửi request
 
 1. Người dùng nhập câu hỏi, chọn model rồi bấm **Gửi**. Nếu ô nhập rỗng hoặc đang có một lượt trả lời khác, frontend không gửi thêm request.
-2. Frontend xóa nội dung ô nhập, hiện tạm câu hỏi của người dùng và một ô trả lời AI đang trống. Đây mới là **trạng thái trên màn hình**, chưa có nghĩa dữ liệu đã được lưu thành công trong MongoDB.
+2. Frontend xóa nội dung ô nhập, hiện tạm câu hỏi của người dùng và một ô trả lời AI đang trống. 
 3. Nếu người dùng vừa bấm **Đoạn chat mới**, frontend chưa có ID cuộc trò chuyện. Nó gửi request tạo cuộc trò chuyện tới backend; backend gắn cuộc trò chuyện với user hiện tại, lưu vào MongoDB và trả về ID. Nếu đã chọn một cuộc trò chuyện cũ, frontend dùng ID sẵn có.
 4. Frontend gửi request chat gồm **ID cuộc trò chuyện, nội dung câu hỏi và model đã chọn**, kèm access token đăng nhập của user. Trên production, request đi qua domain Chatbox và Nginx frontend rồi mới tới Go backend. Trình duyệt không gọi thẳng MongoDB, Keycloak Admin API hay 9Router.
 
