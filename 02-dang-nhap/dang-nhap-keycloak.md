@@ -1,36 +1,38 @@
-# 02.1. Người dùng đăng nhập bằng Keycloak
+# 02. Luồng đăng nhập và duy trì phiên
 
-Đây là luồng khi người dùng **bấm Đăng nhập** trên Chatbox. Nút **Tạo tài khoản** đi cùng luồng, chỉ mở trang đăng ký của Keycloak thay cho trang đăng nhập.
+## Người dùng đăng nhập
 
 ```text
-Người dùng bấm Đăng nhập
-  → FE chuyển trình duyệt sang Keycloak
-  → người dùng nhập tài khoản ở Keycloak
-  → Keycloak chuyển về FE kèm authorization code
-  → FE gửi code cho BE
-  → BE đổi code lấy token ở Keycloak
-  → BE xác định user trong MongoDB
-  → BE trả user + access token cho FE, đặt refresh cookie
-  → FE mở trang chat
+Người dùng → Chatbox → Keycloak → Chatbox frontend → Chatbox backend
+                                      ↑                    ↓
+                                      └──── kết quả ── Keycloak + MongoDB
 ```
 
-## Từng bước
+1. Người dùng bấm **Đăng nhập** trên Chatbox. Trình duyệt được chuyển sang trang đăng nhập của Keycloak. Nếu bấm **Tạo tài khoản**, trình duyệt chuyển sang trang đăng ký của Keycloak.
+2. Người dùng nhập tài khoản và mật khẩu **trên trang Keycloak**. Keycloak kiểm tra thông tin đăng nhập; Chatbox không nhận mật khẩu ở bước này.
+3. Đăng nhập thành công, Keycloak chuyển trình duyệt về Chatbox kèm một **mã đăng nhập tạm thời** gọi là `code`. Mã này chỉ dùng để đổi lấy token, chưa dùng để gọi API Chatbox.
+4. Frontend Chatbox kiểm tra đây có đúng là lần đăng nhập nó vừa bắt đầu không, rồi gửi `code` cho backend Chatbox.
+5. Backend gửi `code` tới Keycloak. Keycloak kiểm tra mã và trả về ba token: **ID token** (thông tin xác nhận người đăng nhập), **access token** (dùng khi gọi API) và **refresh token** (dùng để xin access token mới).
+6. Backend kiểm tra token, lấy ID người dùng Keycloak là `sub`. Nó tìm user Chatbox trong MongoDB bằng `keycloak_sub = sub`. Nếu chưa có, backend tạo một user Chatbox mới. Hai hệ thống có ID riêng: Keycloak dùng `sub`, MongoDB dùng `_id`.
+7. Nếu bật quản lý plan bằng Keycloak, backend kiểm tra role của người dùng để biết họ là Free/Paid và có quyền admin hay không. Phần role và plan sẽ được giải thích ở mục `03-phan-quyen`.
+8. Backend trả thông tin user và **access token** cho frontend, đồng thời đặt **refresh token** vào cookie `HttpOnly` của trình duyệt. Frontend giữ access token trong RAM và hiển thị trang chat.
 
-1. Nút Đăng nhập trong [`Auth.js`](https://github.com/Nguyen-Trung-Hieu1/Chatbox/blob/main/frontend/src/Auth.js) gọi `startKeycloakLogin(false)` ở [`keycloak.js`](https://github.com/Nguyen-Trung-Hieu1/Chatbox/blob/main/frontend/src/keycloak.js). FE tạo `state`, `nonce` và cặp PKCE `verifier/challenge`. Nó chỉ giữ `state`, `nonce`, `verifier` tạm trong `sessionStorage` để kiểm tra callback. Đây chưa phải token đăng nhập.
-2. FE chuyển trình duyệt tới `GET https://auth.chatbox.cyou/realms/chatbox/protocol/openid-connect/auth`. Request có `client_id=chatbox-web`, `response_type=code`, `redirect_uri=https://chatbox.cyou/auth/callback`, `scope=openid profile email`, `state`, `nonce` và `code_challenge`. Với nút Tạo tài khoản, đường dẫn cuối là `/registrations` thay vì `/auth`.
-3. Người dùng nhập thông tin trên trang Keycloak. Keycloak kiểm tra tài khoản của nó, sau đó chuyển trình duyệt về `https://chatbox.cyou/auth/callback?code=...&state=...`. `code` là mã ngắn hạn dùng để đổi token, không phải access token.
-4. FE gọi `finishKeycloakLogin()` trong [`keycloak.js`](https://github.com/Nguyen-Trung-Hieu1/Chatbox/blob/main/frontend/src/keycloak.js): so `state` nhận về với giá trị đã lưu, kiểm tra thời gian không quá 5 phút, rồi gửi `POST /backend/api/auth/exchange` tới BE. Body gồm `code`, `code_verifier`, `redirect_uri`, `nonce`. Nginx bỏ tiền tố `/backend`, nên route Go nhận là `/api/auth/exchange`.
-5. Handler `exchangeKeycloakCode()` ở [`keycloak_session.go`](https://github.com/Nguyen-Trung-Hieu1/Chatbox/blob/main/backend/internal/delivery/http/keycloak_session.go) kiểm tra dữ liệu và `redirect_uri`. BE gửi form tới `POST https://auth.chatbox.cyou/realms/chatbox/protocol/openid-connect/token` với `grant_type=authorization_code`, `client_id=chatbox-web`, `code`, `code_verifier`, `redirect_uri`. Đây là request **BE → Keycloak**. Luồng này không dùng secret của client `chatbox-backend-admin`.
-6. Keycloak trả `access_token`, `id_token`, `refresh_token`, `expires_in`. BE kiểm tra chữ ký và claims của ID token, access token trong [`keycloak.go`](https://github.com/Nguyen-Trung-Hieu1/Chatbox/blob/main/backend/internal/delivery/http/keycloak.go), gồm `nonce`, issuer, thời hạn, client ID và cùng một `sub`. BE lấy `sub` để tìm hoặc tạo user MongoDB; xem [liên kết user](lien-ket-user-keycloak-mongo.md).
-7. Nếu chế độ role Keycloak được bật, BE còn đồng bộ role/plan trước khi trả kết quả. Chi tiết đọc role nằm ở mục `03-phan-quyen`, không thuộc bước đổi authorization code.
-8. BE trả JSON `{user, access_token, expires_in}` và đặt `refresh_token` vào cookie HttpOnly. FE giữ `access_token` trong biến RAM của [`services/api.js`](https://github.com/Nguyen-Trung-Hieu1/Chatbox/blob/main/frontend/src/services/api.js), đưa `user` vào React state và mở trang chat.
+## Sau khi đã đăng nhập
 
-## Ba token nhận được ở bước 6
+Khi frontend gọi API Chatbox, nó gửi access token kèm request. Backend kiểm tra token, xác định người dùng qua `sub`, tìm user tương ứng trong MongoDB rồi mới xử lý request. Frontend không phải gửi lại mật khẩu. Backend cũng không cần đổi `code` hay xin token đăng nhập mới cho **mỗi** request.
 
-| Token | Được dùng ở đâu |
-| --- | --- |
-| `id_token` | BE kiểm tra danh tính và `nonce` lúc hoàn tất đăng nhập; không trả token này cho FE. |
-| `access_token` của user | BE trả cho FE; FE giữ trong RAM và gửi `Authorization: Bearer ...` khi gọi API Chatbox. |
-| `refresh_token` | BE đặt vào cookie HttpOnly của browser; dùng để xin access token mới. |
+## Khi bấm F5 hoặc access token hết hạn
 
-Nếu `state` sai hoặc thiếu `code`, FE dừng trước khi gọi BE. Nếu Keycloak không chấp nhận code/verifier, token không hợp lệ, hoặc bước tạo/tìm user thất bại, BE không trả đăng nhập thành công.
+1. F5 làm trang tải lại nên access token trong RAM bị mất. Cookie chứa refresh token vẫn còn nếu chưa hết hạn.
+2. Frontend yêu cầu backend khôi phục phiên. Trình duyệt tự gửi refresh cookie theo request; JavaScript trên trang không đọc được giá trị cookie `HttpOnly`.
+3. Backend dùng refresh token đó xin token mới từ Keycloak, kiểm tra token và xác định lại user Chatbox.
+4. Backend trả access token mới cho frontend. Frontend giữ nó trong RAM, nên người dùng tiếp tục sử dụng mà không cần đăng nhập lại.
+5. Nếu refresh token hoặc phiên Keycloak đã hết hạn, việc khôi phục thất bại và người dùng phải đăng nhập lại. Khi access token hết hạn giữa lúc đang dùng, frontend cũng thử làm mới phiên rồi gửi lại request một lần.
+
+## Khi đăng xuất
+
+1. Frontend yêu cầu backend đăng xuất.
+2. Backend yêu cầu Keycloak thu hồi refresh token và xóa refresh cookie trong trình duyệt.
+3. Frontend xóa access token trong RAM rồi chuyển trình duyệt qua trang đăng xuất Keycloak. Sau đó người dùng trở về Chatbox ở trạng thái chưa đăng nhập.
+
+**Lưu ý về tài khoản cũ:** user MongoDB có cùng email với user Keycloak không tự động được ghép thành một tài khoản. Để giữ hội thoại và credit cũ, cần liên kết đúng `sub` với **bản ghi MongoDB cũ**; luồng đăng nhập hiện tại chưa tự làm bước chuyển dữ liệu này.
