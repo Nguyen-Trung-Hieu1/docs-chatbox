@@ -14,7 +14,7 @@ Người dùng → Chatbox → Keycloak → Chatbox frontend → Chatbox backend
 4. Frontend Chatbox kiểm tra đây có đúng là lần đăng nhập nó vừa bắt đầu không, rồi gửi `code` cho backend Chatbox.
 5. Backend gửi `code` tới Keycloak. Keycloak kiểm tra mã và trả về ba token: ID token (thông tin xác nhận người đăng nhập), access token(dùng khi gọi API) và refresh token(dùng để xin access token mới).
 6. Backend kiểm tra token, lấy ID người dùng Keycloak là `sub`. Nó tìm user Chatbox trong MongoDB bằng `keycloak_sub = sub`. Nếu chưa có, backend tạo một user Chatbox mới.
-7. Nếu bật quản lý plan bằng Keycloak, backend kiểm tra role của người dùng để biết họ là Free/Paid và có quyền admin hay không. Phần role và plan sẽ được giải thích ở mục `03-phan-quyen`.
+7. Backend kiểm tra role của người dùng để biết họ là Free/Paid và có quyền admin hay không. Phần role và plan sẽ được giải thích ở mục `03-phan-quyen`.
 8. Backend trả thông tin user và access token cho frontend, đồng thời đặt refresh token vào cookie `HttpOnly` của trình duyệt. Frontend giữ access token trong RAM và hiển thị trang chat.
 
 ## Sau khi đã đăng nhập
