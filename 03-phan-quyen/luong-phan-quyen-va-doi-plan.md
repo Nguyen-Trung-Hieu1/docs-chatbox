@@ -21,10 +21,10 @@ FE gửi request kèm access token của user
 ```
 
 1. Sau đăng nhập, FE gửi access token của user khi gọi API Chatbox. BE kiểm tra token và lấy `sub`, tức ID của user bên Keycloak. BE dùng `sub` tìm đúng user Chatbox trong MongoDB.
-2. Nếu chế độ quản lý role bằng Keycloak được bật, BE cần biết **role hiện tại**, kể cả khi admin vừa đổi role sau lúc user đăng nhập. BE dùng `client ID` và `client secret` của **backend service account** để xin một access token riêng từ Keycloak. Token này đại diện cho backend và có quyền đọc/sửa role; nó không phải access token đăng nhập của user.
-3. BE gửi token service account trong một request khác tới Keycloak Admin API, hỏi: “User có `sub` này hiện có những role nào?”. Keycloak trả danh sách role của user. BE nhìn xem có `chatbox-paid` và `chatbox-admin` không.
+2. BE dùng `client ID` và `client secret` của **backend service account** để xin một access token riêng từ Keycloak. Token này đại diện cho backend và có quyền đọc/sửa role.
+3. BE gửi token service account trong một request khác tới Keycloak Admin API. Keycloak trả danh sách role của user. 
 4. BE đồng bộ plan vừa đọc vào ví của user trong MongoDB. MongoDB vẫn giữ số credit, lịch sử sử dụng và bản plan phục vụ tính credit. **Nguồn quyết định quyền Free/Paid là role Keycloak**; nếu ai chỉ sửa plan trong MongoDB, lần đồng bộ tiếp theo có thể ghi đè theo role Keycloak.
-5. Khi FE hỏi thông tin gói, BE đọc ví MongoDB sau khi đã đồng bộ, trả về plan, credit còn lại và các model được phép. FE dùng kết quả đó để hiện bộ chọn model. Khi user gửi tin nhắn, BE **kiểm tra lại** model và credit trước khi gọi 9Router; FE tự hiện thêm model không làm BE cho phép dùng nó.
+5. Khi FE hỏi thông tin gói, BE đọc ví MongoDB sau khi đã đồng bộ, trả về plan, credit còn lại và các model được phép. FE dùng kết quả đó để hiện bộ chọn model. Khi user gửi tin nhắn, BE kiểm tra lại model và credit trước khi gọi 9Router; FE tự hiện thêm model không làm BE cho phép dùng nó.
 
 Luồng đọc role xảy ra lúc hoàn tất đăng nhập, lúc khôi phục phiên và trên các API có xác thực bằng access token. Nếu Keycloak Admin API lỗi khi chế độ role đang bật, request bị lỗi thay vì âm thầm dùng quyền cũ trong MongoDB.
 
