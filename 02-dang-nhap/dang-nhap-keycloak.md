@@ -8,11 +8,11 @@ Người dùng → Chatbox → Keycloak → Chatbox frontend → Chatbox backend
                                       └──── kết quả ── Keycloak + MongoDB
 ```
 
-1. Người dùng bấm **Đăng nhập** trên Chatbox. Trình duyệt được chuyển sang trang đăng nhập của Keycloak. Nếu bấm **Tạo tài khoản**, trình duyệt chuyển sang trang đăng ký của Keycloak.
-2. Người dùng nhập tài khoản và mật khẩu **trên trang Keycloak**. Keycloak kiểm tra thông tin đăng nhập; Chatbox không nhận mật khẩu ở bước này.
-3. Đăng nhập thành công, Keycloak chuyển trình duyệt về Chatbox kèm một **mã đăng nhập tạm thời** gọi là `code`. Mã này chỉ dùng để đổi lấy token, chưa dùng để gọi API Chatbox.
+1. Người dùng bấm Đăng nhập trên Chatbox. Trình duyệt được chuyển sang trang đăng nhập của Keycloak. Nếu bấm **Tạo tài khoản**, trình duyệt chuyển sang trang đăng ký của Keycloak.
+2. Người dùng nhập tài khoản và mật khẩu trên trang Keycloak. Keycloak kiểm tra thông tin đăng nhập.
+3. Đăng nhập thành công, Keycloak chuyển trình duyệt về Chatbox kèm một mã đăng nhập tạm thời gọi là `code`.
 4. Frontend Chatbox kiểm tra đây có đúng là lần đăng nhập nó vừa bắt đầu không, rồi gửi `code` cho backend Chatbox.
-5. Backend gửi `code` tới Keycloak. Keycloak kiểm tra mã và trả về ba token: **ID token** (thông tin xác nhận người đăng nhập), **access token** (dùng khi gọi API) và **refresh token** (dùng để xin access token mới).
+5. Backend gửi `code` tới Keycloak. Keycloak kiểm tra mã và trả về ba token: ID token (thông tin xác nhận người đăng nhập), access token(dùng khi gọi API) và refresh token(dùng để xin access token mới).
 6. Backend kiểm tra token, lấy ID người dùng Keycloak là `sub`. Nó tìm user Chatbox trong MongoDB bằng `keycloak_sub = sub`. Nếu chưa có, backend tạo một user Chatbox mới. Hai hệ thống có ID riêng: Keycloak dùng `sub`, MongoDB dùng `_id`.
 7. Nếu bật quản lý plan bằng Keycloak, backend kiểm tra role của người dùng để biết họ là Free/Paid và có quyền admin hay không. Phần role và plan sẽ được giải thích ở mục `03-phan-quyen`.
 8. Backend trả thông tin user và **access token** cho frontend, đồng thời đặt **refresh token** vào cookie `HttpOnly` của trình duyệt. Frontend giữ access token trong RAM và hiển thị trang chat.
